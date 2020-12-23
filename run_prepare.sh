@@ -1,0 +1,6 @@
+#python prepare_data.py 'Marion County'
+#python prepare_data.py 'Lincoln County'
+python prepare_data.py 'Josephine County'
+#python prepare_data.py 'Jefferson County'
+#python prepare_data.py 'Umatilla County'
+#python prepare_data.py 'Jackson County'
