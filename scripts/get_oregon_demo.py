@@ -18,7 +18,8 @@ for i in range(len(oregon_data)):
 
 data=[]
 for i in range(len(oregon_maps)):
-    pop=lookup_dict[(oregon_maps['TRACTCE'][i],oregon_maps['BLKGRPCE'][i])]
+    index=lookup_dict[(oregon_maps['TRACTCE'][i],oregon_maps['BLKGRPCE'][i])]
+    pop=population_data.iloc[index][args.censusvar]
     data.append(pop)
 
 oregon_maps['Hispanic']=data
