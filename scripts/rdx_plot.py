@@ -1,4 +1,3 @@
-from utils import read_xlsx
 import pickle
 import pandas
 from urllib.request import urlopen
@@ -140,7 +139,12 @@ _count=0
 for i,d in demo_data.iterrows():
     print(i)
     _x,_y=d['geometry'].exterior.xy
-    fig.add_trace(go.Scattermapbox(lon=list(_x), lat=list(_y), fill="toself",marker=dict(color=cdict[route_colors[_count]])))
+    fig.add_trace(go.Scattermapbox(
+        lon=list(_x),
+        lat=list(_y),
+        fill="toself",
+        marker=dict(size=0,color=cdict[route_colors[_count]])
+        , line=dict(color='#1f77b4') ))
     _count+=1
     
 print(site_nodes)
