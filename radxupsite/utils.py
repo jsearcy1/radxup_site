@@ -2,6 +2,7 @@ import censusdata
 import pkg_resources
 import pickle
 
+
 def get_state_blkgrp_fname(state_code,year):
     return 'cb_'+str(year)+'_'+state_code+'_bg_500k.zip'
 
@@ -30,6 +31,17 @@ def get_county_demodata(state,county):
     _dir=get_county_data_dir(state,county)
     fname=_dir+'demographics.pk'
     return fname
+ 
+def get_county_optdata(state,county,n_sites):
+    _dir=get_county_data_dir(state,county)
+    fname=_dir+'opt_'+str(n_sites)+'.pk'
+    return fname
+
+def get_county_htmldata(state,county,n_sites):
+    _dir=get_county_data_dir(state,county)
+    fname=_dir+'map_'+str(n_sites)+'.html'
+    return fname
+
 
 def get_county_graphdata(state,county):
     _dir=get_county_data_dir(state,county)

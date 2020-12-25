@@ -65,24 +65,26 @@ else:
 
     print('Requesting Census Data')
     population_data = censusdata.download('acs5', args.year,censusdata.censusgeo([('state', state_code) ,('county',county_code),('block group','*')]),[args.censusvar])
-
+    
     lookup_dict={}
     for i in range(len(population_data)):
         tract=population_data.index[i].geo[2][1]
         block_group=population_data.index[i].geo[3][1]
-        lookup_dict[(tract,block_group)]=i
+        lookup_dict[(tract,block_group,county_code)]=i
     data=[]
     selections=[]
     for i in range(len(map_data)):
-        key=(map_data['TRACTCE'][i],map_data['BLKGRPCE'][i])
+        key=(map_data['TRACTCE'][i],map_data['BLKGRPCE'][i],map_data['COUNTYFP'][i])
         if key in lookup_dict:
             index=lookup_dict[key]
             pop=population_data.iloc[index][args.censusvar]
+            if pop==0:
+                continue
             selections.append(i)
             data.append(pop)
             
     geo_df=(map_data.iloc[selections]).copy()
-    assert(len(geo_df)==len(data))
+    assert(len(geo_df)==sum(population_data[args.censusvar]!=0))
     geo_df['Population']=data
     geo_df.to_pickle(demo_file)
 
@@ -92,7 +94,7 @@ graph_file=utils.get_county_graphdata(state_name,county_name)
 
 if not os.path.exists(graph_file):
     print('Downloading Street Graph')
-    graph=ox.graph_from_place(county_name,network_type='drive')
+    graph=ox.graph_from_place(county_name,network_type='drive',buffer_dist=50000)
     graph = ox.add_edge_speeds(graph)
     graph = ox.add_edge_travel_times(graph)
     with open(graph_file,'wb') as out_file:
