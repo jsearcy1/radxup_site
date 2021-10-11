@@ -45,7 +45,7 @@ ell contents
     return data
 
 def get_address_string(d):
-   return d['address']+', '+d['city']+', OR'
+   return d['Address']+', '+d['City']+', OR'
 
 
 rate_limit=5 #Seconds between request

@@ -60,7 +60,7 @@ s_lat=[]
 
 
 
-for county in ['Jackson']:
+for county in ['Lincoln']:
     graph_file=utils.get_county_graphdata('oregon',county)
     graph=pickle.load(open(graph_file,'rb'))
     points=[]
@@ -69,13 +69,14 @@ for county in ['Jackson']:
     zip_matches={}    
     for site in site_data[county]:
         matches=[]
+        if 'routes' not in site: site['routes']=[]
         for route in site['routes']:
             _p=node_list_to_path(graph,route)
             if _p==[]: continue
             for pc in (_p[0],_p[-1]):
                 p=Point(*pc)
                 matches+=set([i for i,v in map_data.iterrows() if v.geometry.contains(p)] )
-            geo_matches[site['uo_site_id']]=matches
+            geo_matches[site['UO Site ID']]=matches
             
             vals=list(reversed(_p))+_p
             points+=vals
@@ -84,8 +85,8 @@ for county in ['Jackson']:
         s_lon.append(float(site['long']))
         s_lat.append(float(site['lat']))
         p=Point(float(site['long']),float(site['lat']))
-        bg_matches[site['uo_site_id']]=[list(set([i for i,v in map_data.iterrows() if v.geometry.contains(p)]))[0]]
-        zip_matches[site['uo_site_id']]=[list(set([i for i,v in zipcode_data.iterrows() if v.geometry.contains(p)]))[0]]
+        bg_matches[site['UO Site ID']]=[list(set([i for i,v in map_data.iterrows() if v.geometry.contains(p)]))[0]]
+        zip_matches[site['UO Site ID']]=[list(set([i for i,v in zipcode_data.iterrows() if v.geometry.contains(p)]))[0]]
         
 
 demo_data=pd.DataFrame()

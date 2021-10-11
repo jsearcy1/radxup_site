@@ -1,3 +1,4 @@
+
 import csv
 from radxupsite import utils
 from shapely.geometry import Point
@@ -6,15 +7,25 @@ import pickle
 import numpy as np
 import pandas as pd
 site_data={}
+time_cutoff=45*60 #3/4 Hour  
+
+
 with open('output_data.csv', newline='') as csvfile:
      reader = csv.DictReader(csvfile)
      for row in reader:
-         if row['county'] not in site_data:
-             site_data[row['county']]=[]
-         site_data[row['county']].append(row)
+         if row['UO Site ID']=='JO5':
+              row['County']='Jackson'
 
-proposal_data=pd.read_excel('site_prop_loc.xlsx')
+         if row['County'] =="":
+              print('Ahhhh',row)
+              continue          
+         if row['County'].strip() not in site_data:
+             site_data[row['County'].strip()]=[]
+         site_data[row['County'].strip()].append(row)
+print(sum([len(i) for i in site_data.values()]))
          
+proposal_data=pd.read_excel('site_prop_loc.xlsx')
+
 for county in site_data:
     
     county_data_directory=utils.get_county_data_dir('oregon',county)
@@ -25,11 +36,11 @@ for county in site_data:
     poi_points,poi_names,pois=pickle.load(open(poi_file,'rb'))
     demo_data=pickle.load(open(demo_file,'rb'))
     graph=pickle.load(open(graph_file,'rb'))
-
-    county_proposals=[(i,p) for i,p in proposal_data.iterrows() if p['County'] ==county ]
-         
+#    ox.plot_graph(graph)
     
+    county_proposals=[(i,p) for i,p in proposal_data.iterrows() if p['County'] ==county ]             
     n_site_proposals=set([ p['Sites Per County in Optimization'] for i,p in county_proposals])    
+
     site_nodes=[ox.get_nearest_node(graph,(float(p['lat']),float(p['long']))) for p in site_data[county] ]
 
     
@@ -45,14 +56,18 @@ for county in site_data:
               n_sites=min(_sites)
 
          
-    proposal_nodes=[(ox.get_nearest_node(graph,(float(p['Lattitude']),float(p['Longitude']))),i) for i,p in proposal_data.iterrows() if p['County'] ==county and p['Sites Per County in Optimization']==n_sites]
+    proposal_nodes=[(ox.get_nearest_node(graph,(float(p['Lattitude']),float(p['Longitude']))),i) for i,p in proposal_data.iterrows()
+                    if p['County'] ==county and p['Sites Per County in Optimization']==n_sites]
 
     
     best_site=[]
+
     for index,s in enumerate(site_nodes):
          if n_sites !=0:
               route=[(ox.shortest_path(graph,s,p,weight='travel_time'),i) for p,i in proposal_nodes]
+              print("Routes",len(route),len(proposal_nodes))
               td,i=min([(np.sum(ox.utils_graph.get_route_edge_attributes(graph, r, 'travel_time')),i) for r,i in route])
+             # ox.plot_graph_route(graph,route[i])
               site_data[county][index]["DT to Proposal"]=td
               site_data[county][index]["Proposal Number"]=proposal_data.iloc[i]['Site Proposal Number']
               site_data[county][index]["Sites Per County in Optimization"]=proposal_data.iloc[i]["Sites Per County in Optimization"]
@@ -74,7 +89,7 @@ for county in site_data:
 
     site_index=[]
     best_times=[]
-    best_route=[]
+    site_routes=[]
     for pop_i,pop_n in enumerate(pop_nodes):
          times=[]
          pop=[]
@@ -84,23 +99,34 @@ for county in site_data:
               td=np.sum(ox.utils_graph.get_route_edge_attributes(graph, route, 'travel_time'))
               times.append(td)
               routes.append(route)
-         si=np.argmin(times)
-         site_index.append(si)
-         best_times.append(min(times))
-         best_route.append(routes[si])
+         site_is=[(i,v) for i,v in enumerate(times) if v < time_cutoff]
+         site_index.append(site_is)
+         site_routes.append([routes[i[0]] for i in site_is])
          
     for pop_i,pop_n in enumerate(pop_nodes):
-          si=site_index[pop_i]
-          if 'Population_Assigned' not in site_data[county][si]:
-               site_data[county][si]['Population_Assigned']=0
-               site_data[county][si]['Average_Drivetime']=0
-               site_data[county][si]['routes']=[]
-               
-          site_data[county][si]['Population_Assigned']+=pop_data[pop_i]
-          site_data[county][si]['Average_Drivetime']+=best_times[pop_i]*pop_data[pop_i]             
-          site_data[county][si]['routes'].append(best_route[pop_i])
+          for index,(si,time) in enumerate(site_index[pop_i]):          
+              if 'Population_Assigned' not in site_data[county][si]:
+                   site_data[county][si]['Population_Assigned']=0
+                   site_data[county][si]['Average_Drivetime']=0
+                   site_data[county][si]['routes']=[]
+
+              site_data[county][si]['Population_Assigned']+=pop_data[pop_i]
+              site_data[county][si]['Average_Drivetime']+=time*pop_data[pop_i]             
+              site_data[county][si]['routes'].append(site_routes[pop_i][index])
           
     for s in site_data[county]:
+          # print(s)
+          # if  s['UO Site ID'] == 'MC3':
+          #      match=[m for m in site_data[county] if m['UO Site ID']=='DE1'][0] 
+          #      s['Population_Assigned']=match['Population_Assigned']
+          #      s['Average_Drivetime']=match['Average_Drivetime']
+
+          # if  s['UO Site ID'] == 'MC1':
+          #      match=[m for m in site_data[county] if m['UO Site ID']=='LI1'][0] 
+          #      s['Population_Assigned']=match['Population_Assigned']
+          #      s['Average_Drivetime']=match['Average_Drivetime']
+
+               
           if 'Population_Assigned' not in s:
                s['Population_Assigned']=0
                s['Average_Drivetime']=0
