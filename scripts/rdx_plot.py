@@ -22,8 +22,14 @@ parser.add_argument('state', metavar='S', type=str,
                     help='State')
 parser.add_argument('county', metavar='C', type=str,
                     help='County')
+parser.add_argument('censusvar', metavar='V', type=str,
+                    help='Census Variable to Plot')
 parser.add_argument('nsites', metavar='N', type=int,
                     help='Number of sites to optimize for')
+parser.add_argument('--year', metavar='Y', type=str, default='2019',
+                help='year to use for census data')
+
+
 
 args = parser.parse_args()
 
@@ -33,27 +39,7 @@ if not os.path.exists(county_data_directory):
     raise Exception('No data available for county',args.county,' please run rdx_getdata.py')
 
 
-
-
-
-
-parser = argparse.ArgumentParser(description='Process some integers.')
-parser.add_argument('state', metavar='S', type=str, 
-                    help='State')
-parser.add_argument('county', metavar='C', type=str,
-                    help='County')
-parser.add_argument('nsites', metavar='N', type=int,
-                    help='Number of sites to optimize for')
-
-args = parser.parse_args()
-
-county_data_directory=utils.get_county_data_dir(args.state,args.county)
-
-if not os.path.exists(county_data_directory):
-    raise Exception('No data available for county',args.county,' please run rdx_getdata.py')
-
-
-demo_file=utils.get_county_demodata(args.state,args.county)
+demo_file=utils.get_county_demodata(args.state,args.county,args.year,args.censusvar)
 graph_file=utils.get_county_graphdata(args.state,args.county)
 poi_file=utils.get_county_poidata(args.state,args.county)
 n_sites=args.nsites
@@ -63,7 +49,7 @@ n_sites=args.nsites
 poi_points,poi_names,pois=pickle.load(open(poi_file,'rb'))
 demo_data=pickle.load(open(demo_file,'rb'))
 graph=pickle.load(open(graph_file,'rb'))
-opt_file=utils.get_county_optdata(args.state,args.county,n_sites)
+opt_file=utils.get_county_optdata(args.state,args.county,args.year,args.censusvar,n_sites,)
 
 routes,route_colors,site_nodes,site_index=pickle.load(open(opt_file,'rb'))
 
@@ -72,12 +58,12 @@ l=0
 for i,r in enumerate(routes):
     l+=np.sum(
     ox.utils_graph.get_route_edge_attributes(graph, r, 'travel_time'))*demo_data.iloc[i]['Population']
-print('loss',l)
+#print('loss',l)
 
 
-for i in site_index:
-    print(i)
-    print(pois[i])
+#for i in site_index:
+#    print(i)
+#    print(pois[i])
 
 def node_list_to_path(G, node_list):
     edge_nodes = list(zip(node_list[:-1], node_list[1:]))
@@ -137,7 +123,7 @@ for l,c in zip(lines,route_colors):
         line = dict(width = 4, color = cdict[c])))
 _count=0
 for i,d in demo_data.iterrows():
-    print(i)
+#    print(i)
     _x,_y=d['geometry'].exterior.xy
 #    fig.add_trace(go.Scattermapbox(
 #        lon=list(_x),
@@ -147,7 +133,7 @@ for i,d in demo_data.iterrows():
 #        ))
 #    _count+=1
     
-print(site_nodes)
+#print(site_nodes)
 for sn in site_nodes:
     fig.add_trace(
         go.Scattermapbox(

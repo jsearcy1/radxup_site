@@ -1,3 +1,4 @@
+import os
 import censusdata
 import pkg_resources
 import pickle
@@ -27,15 +28,19 @@ def get_county_data_dir(state,county):
     fname=pkg_resources.resource_filename(__name__, "data/"+_state+'/'+_county+'/')
     return fname
 
+def get_county_demodir(state,county,year,census_var):
+    _dir=os.path.join(get_county_data_dir(state,county),str(year),census_var)
+    return _dir
 
-def get_county_demodata(state,county):
-    _dir=get_county_data_dir(state,county)
-    fname=_dir+'demographics.pk'
+
+def get_county_demodata(state,county,year,census_var):
+    _dir=get_county_demodir(state,county,year,census_var)
+    fname=_dir+'/demographics.pk'
     return fname
  
-def get_county_optdata(state,county,n_sites):
+def get_county_optdata(state,county,year,censusvar,n_sites):
     _dir=get_county_data_dir(state,county)
-    fname=_dir+'opt_'+str(n_sites)+'.pk'
+    fname=_dir+'opt_'+'_'.join([year,censusvar,str(n_sites)])+'.pk'
     return fname
 
 def get_county_htmldata(state,county,n_sites):

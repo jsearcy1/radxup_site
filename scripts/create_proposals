@@ -1,0 +1,64 @@
+#!/bin/bash
+
+programname=$0
+set -o pipefail
+set -e
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+
+function usage {
+    echo "usage: $programname state county censusvar year n_sites"
+    [ $PS1 ] && return ;
+}
+
+
+msg() {
+  echo >&2 -e "${1-}"
+}
+
+die() {
+  local msg=$1
+  local code=${2-1} # default exit status 1
+  msg "$msg"
+  [ $PS1 ] && return "$code" ;
+}
+
+parse_params() {
+  # default values of variables set from params
+  flag=0
+  param=''
+  while :; do
+      echo "${1-}"
+      case "${1-}" in
+	  -h | --help) usage ;;
+	  "") break ;;
+          *) 
+	      args+=("$1")
+	      ;;
+      esac
+      shift
+  done
+  # check required params and arguments
+  if [[ ${#args[@]} -ne 5 ]]
+  then
+      echo 'Missing Arguments' ${#args[@]} 'Provided 5 Needed' 
+      usage 
+  fi
+  return 0
+}
+
+parse_params "$@"
+state=${args[0]}
+county=${args[1]}
+censusvar=${args[2]}
+year=${args[3]}
+n_sites=${args[4]}
+
+
+echo 'Fetching Data for '${state} ${county} ${censusvar}  ${year}
+python ${SCRIPT_DIR}/rdx_getdata.py "${state}" "${county}" ${censusvar} --year=${year}
+
+echo 'Running Optimization for '${n_sites}' Sites' 
+python ${SCRIPT_DIR}/rdx_optimize.py "${state}" "${county}" ${censusvar} ${n_sites} --year=${year}
+
+echo 'Plotting Optimization '${n_sites}' Sites' 
+python ${SCRIPT_DIR}/rdx_plot.py "${state}" "${county}" ${censusvar} ${n_sites} --year=${year}
