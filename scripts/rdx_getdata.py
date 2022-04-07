@@ -31,7 +31,8 @@ county_name,county_code=utils.lookup_countycode(state_code,args.county,args.year
 county_data_directory=utils.get_county_data_dir(state_name,county_name)
 state_data_directory=utils.get_state_data_dir(state_name)
 
-demo_file=utils.get_county_demodata(state_name,county_name)
+demo_directory=utils.get_county_demodir(state_name,county_name,args.year,args.censusvar)
+demo_file=utils.get_county_demodata(state_name,county_name,args.year,args.censusvar)
 
 
 if not os.path.exists(county_data_directory):
@@ -40,9 +41,12 @@ if not os.path.exists(county_data_directory):
 if not os.path.exists(state_data_directory):
     os.makedirs(state_data_directory)
 
+if not os.path.exists(demo_directory):
+    os.makedirs(demo_directory)
+
 
 if os.path.exists(demo_file):
-    print('Found Demographic Data Continuing')
+    print('Found Demographic Data:',demo_file,'\n Continuing')
 else:  
 
     map_fname=utils.get_state_blkgrp_fname(state_code,args.year)
@@ -59,6 +63,7 @@ else:
         zf=ZipFile(map_file)
         zf.extractall( path=state_data_directory+'/blkgrp/', pwd=None)
     else:
+        print(map_file)
         print('Using Existing state GIS data')
      
     map_data=gpd.read_file(state_data_directory+'/blkgrp/'+shp_fname)

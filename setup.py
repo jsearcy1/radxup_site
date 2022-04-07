@@ -13,8 +13,10 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/jsearcy1/radxup_site",
     packages=setuptools.find_packages(),
+    scripts=['scripts/create_proposals','scripts/rdx_getdata.py','scripts/rdx_optimize.py','scripts/rdx_plot.py'],
     classifiers=[
         "Programming Language :: Python :: 3",
     ],
     python_requires='>=3.6',
+    install_requires=['censusdata','osmnx','plotly','openpyxl','ortools','wget','numpy','tqdm']
 )
