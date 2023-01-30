@@ -138,8 +138,8 @@ if not os.path.exists(poi_file):
             points.append(point)
             names.append(r.name)
             pois.append(r)
-        with open(poi_file,'wb') as out_file:
-            pickle.dump([points,names,pois],out_file)
+    with open(poi_file,'wb') as out_file:
+        pickle.dump([points,names,pois],out_file)
 else:
     print('Points of Interest Data Found')
 

@@ -13,7 +13,7 @@ def get_state_blkgrp_shp(state_code,year):
 
 def get_blkgrp_map_link(state_code,year):
     fname=get_state_blkgrp_fname(state_code,year)
-    return 'https://www2.census.gov/geo/tiger/GENZ2019/shp/'+fname
+    return 'https://www2.census.gov/geo/tiger/GENZ'+str(year)+'/shp/'+fname
 
 def get_county_shortname(county):
     search=county.lower().find('county')
